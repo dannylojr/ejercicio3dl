@@ -1,7 +1,34 @@
-<div *ngFor="let task of getFilteredTasks(); let i = index" class="task-item" [ngClass]="{'exploding': stateTasks[i]}">
-  <input type="checkbox" (click)="checkTask(i)" [checked]="stateTasks[i]">
-  {{ task }}
-  <button (click)="deleteTask(i)">Eliminar</button>
+<div class="task-list-container">
+  <!-- Formulario para agregar una nueva tarea -->
+  <div class="add-task">
+    <input 
+      [(ngModel)]="newTask" 
+      placeholder="Añadir nueva tarea"
+      type="text"
+    />
+    <button (click)="addTask()">Añadir</button>
+  </div>
+
+  <!-- Botones para filtrar las tareas -->
+  <div class="filter-buttons">
+    <button (click)="showCompletedTasks()">Mostrar Completadas</button>
+    <button (click)="showIncompleteTasks()">Mostrar Incompletas</button>
+    <button (click)="showAllTasks()">Mostrar Todas</button>
+  </div>
+
+  <!-- Lista de tareas -->
+  <ul class="task-list">
+    <!-- Usamos un contenedor adicional para manejar *ngIf -->
+    <ng-container *ngFor="let task of tasks; index as i">
+      <li *ngIf="shouldShowTask(i)" [ngClass]="{ completed: stateTasks[i] }">
+        <input 
+          type="checkbox" 
+          [checked]="isChecked(i)" 
+          (change)="toggleComplete(i)"
+        />
+        <span>{{ task }}</span>
+        <button (click)="deleteTask(i)">Eliminar</button>
+      </li>
+    </ng-container>
+  </ul>
 </div>
-<input [(ngModel)]="newTask" placeholder="Nueva tarea">
-<button (click)="addTask()">Agregar</button>

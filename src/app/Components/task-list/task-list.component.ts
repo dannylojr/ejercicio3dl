@@ -1,11 +1,11 @@
-import { NgClass, NgFor } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-task-list',
   standalone: true,
-  imports: [FormsModule, NgFor, NgClass],
+  imports: [FormsModule, NgFor, NgClass, NgIf],
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.css']
 })
@@ -13,45 +13,74 @@ export class TaskListComponent {
   @Input() tasks: string[] = [];
   @Output() tasksChange = new EventEmitter<string[]>();
 
-  stateTasks: boolean[] = [];
-  filtered: boolean = false; 
-  newTask: string = '';
+  stateTasks: boolean[] = []; // Estado de cada tarea (completada o incompleta)
+  newTask: string = '';       // Tarea nueva para añadir
+
+  // Filtros de visibilidad
+  showCompleted: boolean = true; // Mostrar tareas completas
+  showIncomplete: boolean = true; // Mostrar tareas incompletas
 
   constructor() {
-    this.stateTasks = new Array(this.tasks.length).fill(false);
-  }
-
-  deleteTask(index: number) {
-    const taskToRemove = this.tasks[index];
-    this.tasks.splice(index, 1);
-    this.stateTasks.splice(index, 1);
-    this.tasksChange.emit(this.tasks); // Emitimos el cambio de tareas
-    this.triggerExplosionEffect(taskToRemove);
-  }
-
-  checkTask(index: number) {
-    this.stateTasks[index] = !this.stateTasks[index];
-  }
-
-  filterCompletedTasks() {
-    this.filtered = !this.filtered;
-  }
-
-  getFilteredTasks() {
-    return this.filtered ? this.tasks.filter((_, index) => this.stateTasks[index]) : this.tasks;
+    this.stateTasks = this.tasks.map(() => false); // Inicialmente todas las tareas están incompletas
   }
 
   addTask() {
     if (this.newTask.trim()) {
       this.tasks.push(this.newTask);
-      this.stateTasks.push(false);
+      this.stateTasks.push(false);  // Nueva tarea está incompleta por defecto
       this.newTask = '';
-      this.tasksChange.emit(this.tasks); // Emitimos el cambio de tareas
+      this.tasksChange.emit(this.tasks);
     }
   }
 
-  private triggerExplosionEffect(task: string) {
-    console.log(`¡Explosión! Tarea eliminada: ${task}`);
-    // Aquí se podría agregar lógica para mostrar el efecto visual
+  deleteTask(index: number) {
+    this.tasks.splice(index, 1);
+    this.stateTasks.splice(index, 1); // También eliminamos el estado de la tarea
+    this.tasksChange.emit(this.tasks);
+  }
+
+  toggleComplete(index: number) {
+    this.stateTasks[index] = !this.stateTasks[index]; // Cambia el estado de la tarea (completa/incompleta)
+    this.tasksChange.emit(this.tasks);
+  }
+
+  // Funciones de filtro
+  showCompletedTasks() {
+    this.showCompleted = true;
+    this.showIncomplete = false;
+  }
+
+  showIncompleteTasks() {
+    this.showCompleted = false;
+    this.showIncomplete = true;
+  }
+
+  showAllTasks() {
+    this.showCompleted = true;
+    this.showIncomplete = true;
+  }
+
+  // Función para determinar si la tarea debe mostrarse según el filtro
+  shouldShowTask(index: number): boolean {
+    const isCompleted = this.stateTasks[index];
+
+    if (this.showCompleted && this.showIncomplete) {
+      return true;  // Mostrar todas las tareas
+    }
+
+    if (this.showCompleted && isCompleted) {
+      return true;  // Mostrar solo las tareas completadas
+    }
+
+    if (this.showIncomplete && !isCompleted) {
+      return true;  // Mostrar solo las tareas incompletas
+    }
+
+    return false; // No mostrar la tarea
+  }
+
+  // Función para asegurarse de que los checkboxes no se vean afectados
+  isChecked(index: number): boolean {
+    return this.stateTasks[index];
   }
 }
