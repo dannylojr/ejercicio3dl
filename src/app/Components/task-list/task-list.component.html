@@ -1,0 +1,7 @@
+<div *ngFor="let task of getFilteredTasks(); let i = index" class="task-item" [ngClass]="{'exploding': stateTasks[i]}">
+  <input type="checkbox" (click)="checkTask(i)" [checked]="stateTasks[i]">
+  {{ task }}
+  <button (click)="deleteTask(i)">Eliminar</button>
+</div>
+<input [(ngModel)]="newTask" placeholder="Nueva tarea">
+<button (click)="addTask()">Agregar</button>
